@@ -13,22 +13,16 @@ import numpy as np
 data_folder = "../data/"
 results_path = "../results/"
 
-# === READ DATA ===
+# === Read train data ===
 train_data = pd.read_csv(data_folder + "train.csv", header=0)
-
-# === Filter by Sex, Pclass and Fare ===
-num_Pclasses = len(np.unique(train_data['Pclass']))
 
 # Clean data
 train_data.loc[train_data['Fare'].isnull(),'Fare'] = train_data['Fare'].mean()
 
-# Create different class for fare
-# $0-9 => 0
-# $10-19 => 1
-# $20-29 => 2
-# $30-39 => 3
-# $40-inf => 4
+# === Filter by Sex, Pclass and Fare ===
+num_Pclasses = len(np.unique(train_data['Pclass']))
 
+# Create different class for fare
 num_fare_classes = 5
 		
 train_data.loc[(train_data['Fare'] >= 0) & (train_data['Fare'] < 10),'FareClass'] = 0
@@ -41,6 +35,7 @@ train_data.loc[train_data['Fare'] >= 40,'FareClass'] = 4
 train_data['PassengerId'] = train_data['PassengerId'].astype(int)
 train_data['FareClass'] = train_data['FareClass'].astype(int)
 
+# === Generate survival table to make simple predictions ===
 survival_table = np.zeros((2,num_Pclasses,num_fare_classes))
 
 for pclass in range(num_Pclasses):
@@ -63,9 +58,9 @@ survival_table = survival_table.astype(int)
 
 print(survival_table)
 
-test_data = pd.read_csv(data_folder + "test.csv", header=0)
-
+# === Read test data ===
 # Clean data
+test_data = pd.read_csv(data_folder + "test.csv", header=0)
 test_data.loc[test_data['Fare'].isnull(),'Fare'] = test_data['Fare'].mean()
 
 # Create different class for fare
@@ -79,6 +74,7 @@ test_data.loc[test_data['Fare'] >= 40,'FareClass'] = 4
 test_data['PassengerId'] = test_data['PassengerId'].astype(int)
 test_data['FareClass'] = test_data['FareClass'].astype(int)
 
+# === Generate submission file ===
 submission = pd.DataFrame(columns=('PassengerId','Survived'))
 submission['PassengerId'] = submission['PassengerId'].astype(int)
 submission['Survived'] = submission['Survived'].astype(int)
