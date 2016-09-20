@@ -9,9 +9,10 @@ Based on those tutorials :
 from __future__ import print_function
 import pandas as pd
 import numpy as np
+import constants
 
-data_folder = "../data/"
-results_path = "../results/"
+data_folder = constants.data_folder
+results_path = constants.results_path
 
 # === Read train data ===
 train_data = pd.read_csv(data_folder + "train.csv", header=0)
