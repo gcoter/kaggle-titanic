@@ -1,7 +1,7 @@
 """
 ORIGINAL DATASET : PassengerId,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked
 
-NEW DATASET : PassengerId,Pclass,Gender,AgeFill,FareClass
+NEW DATASET : PassengerId,Survived,Pclass,SibSp,Parch,FareClass,Gender,AgeFill,Alpha
 """
 
 import pandas as pd
@@ -28,6 +28,12 @@ def prepare_dataset(dataframe):
 	dataframe['AgeFill'] = dataframe['Age']
 	dataframe.loc[dataframe['AgeFill'].isnull(),'AgeFill'] = dataframe['AgeFill'].mean()
 
+	""" 
+	Small alpha <-> Not Survived
+	Big alpha <-> Survived
+	"""
+	dataframe['Alpha'] = 1/dataframe['Pclass'] * (dataframe['Gender']+1) * 1/dataframe['AgeFill'] * (dataframe['FareClass']+1)
+	
 	# Drop Age
 	dataframe = dataframe.drop(['Age'], axis=1)
 	
