@@ -37,12 +37,6 @@ def prepare_dataset(dataframe):
 	dataframe = convert_to_classes(dataframe,'AgeFill')
 	dataframe = convert_to_classes(dataframe,'FamilySize')
 	
-	# Conversions to int
-	dataframe['PassengerId'] = dataframe['PassengerId'].astype(int)
-	dataframe['FareFillClass'] = dataframe['FareFillClass'].astype(int)
-	dataframe['AgeFillClass'] = dataframe['AgeFillClass'].astype(int)
-	dataframe['FamilySizeClass'] = dataframe['FamilySizeClass'].astype(int)
-	
 	# Create title feature from name
 	dataframe['Title'] = dataframe['Name'].str.extract("(.*\.)", expand=False).str.split(",", expand=False).str.get(1).str.strip()
 	
@@ -69,18 +63,28 @@ def prepare_dataset(dataframe):
 	"""
 	
 	frequent_titles = ['Mr.','Miss.','Mrs.']
-	rare_titles = ['Master.','Dr.','Rev.','Major.','Col.','Jonkheer.','Sir.','Don.','Capt.','the Countess.']
+	possible_titles = frequent_titles + ['Rare']
+	# rare_titles = ['Master.','Dr.','Rev.','Major.','Col.','Jonkheer.','Sir.','Don.','Capt.','the Countess.']
 	
 	dataframe.loc[dataframe['Title'] == 'Mlle.', 'Title'] = 'Miss.'
-	# dataframe.loc[dataframe['Title'] == 'Mrs. Martin (Elizabeth L.', 'Title'] = 'Mrs.'
 	dataframe.loc[dataframe['Title'] == 'Ms.', 'Title'] = 'Mrs.'
 	dataframe.loc[dataframe['Title'] == 'Mme.', 'Title'] = 'Mrs.'
 	dataframe.loc[dataframe['Title'] == 'Lady.', 'Title'] = 'Miss.'
 	
-	dataframe.loc[dataframe['Title'].isin(rare_titles), 'Title'] = 'Rare'
-	dataframe.loc[!dataframe['Title'].isin(frequent_titles), 'Title'] = 'Rare'
+	dataframe.loc[~dataframe['Title'].isin(frequent_titles), 'Title'] = 'Rare'
 	
-	# FEATURES : PassengerId,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked,Survived||FareFill,AgeFill,Gender,FamilySize,FareClass,AgeFillClass,FamilySizeClass
+	# Convert Title to numerical classes
+	for i in range(len(possible_titles)):
+		dataframe.loc[dataframe['Title'] == possible_titles[i], 'TitleClass'] = i
+	
+	# Conversions to int
+	dataframe['PassengerId'] = dataframe['PassengerId'].astype(int)
+	dataframe['FareFillClass'] = dataframe['FareFillClass'].astype(int)
+	dataframe['AgeFillClass'] = dataframe['AgeFillClass'].astype(int)
+	dataframe['FamilySizeClass'] = dataframe['FamilySizeClass'].astype(int)
+	dataframe['TitleClass'] = dataframe['TitleClass'].astype(int)
+	
+	# FEATURES : PassengerId,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked,Survived||FareFill,AgeFill,Gender,FamilySize,FareClass,AgeFillClass,FamilySizeClass,Title,TitleClass
 	
 	# Drop unused classes
 	dataframe = dataframe.drop(['Age'], axis=1)
@@ -92,10 +96,9 @@ def prepare_dataset(dataframe):
 	dataframe = dataframe.drop(['Parch'], axis=1)
 
 	# Drop unused columns (dtype=object)
-	dataframe = dataframe.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis=1)
+	dataframe = dataframe.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Title'], axis=1)
 	
-	# FEATURES : PassengerId,Survived,Pclass||Gender,FareFillClass,AgeFillClass,FamilySizeClass
-
+	# FEATURES : PassengerId,(Survived),Pclass||Gender,FareFillClass,AgeFillClass,FamilySizeClass,TitleClass
 	return dataframe
 	
 def generate_submission_file(test_data,predictions,file_path):

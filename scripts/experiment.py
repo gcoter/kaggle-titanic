@@ -35,15 +35,34 @@ train_data_np = train_data.values
 test_data_np = test_data.values
 
 # === Feature selection ===
+train_X = train_data_np[0::,2::]
+train_Y = train_data_np[0::,1]
 
-# === MODEL ===
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 
+clf = RandomForestClassifier(n_estimators=100, max_features=None)
+clf = clf.fit(train_X,train_Y)
+
+# print(clf.feature_importances_)
+selection = SelectFromModel(clf, prefit=True)
+
+train_X_new = selection.transform(train_X)
+selected_indices = selection.get_support(indices=True)
+
+print('Features Importances :',clf.feature_importances_)
+print('Selected Indices :',selected_indices)
+
+"""
+# === MODEL ===
 model = RandomForestClassifier(n_estimators=10, max_features=None)
-model = model.fit(train_data_np[0::,2::],train_data_np[0::,1])
+model = model.fit(train_X_new,train_Y)
 
 # Take the same decision trees and run it on the test data
-predictions = model.predict(test_data_np[0::,1::])
+test_X = test_data_np[0::,1::]
+test_X_new = test_X[:,selected_indices]
+predictions = model.predict(test_X_new)
 
 # === Generate submission file ===
 utils.generate_submission_file(test_data, predictions, results_path + 'experiment.csv')
+"""
