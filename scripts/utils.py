@@ -32,8 +32,6 @@ def prepare_dataset(dataframe):
 	# Create FamilySize feature
 	dataframe['FamilySize'] = dataframe['SibSp'] + dataframe['Parch']
 	
-	print(dataframe[dataframe['FamilySize'].isnull()])
-	
 	# Convert to classes
 	dataframe = convert_to_classes(dataframe,'FareFill')
 	dataframe = convert_to_classes(dataframe,'AgeFill')
@@ -44,6 +42,43 @@ def prepare_dataset(dataframe):
 	dataframe['FareFillClass'] = dataframe['FareFillClass'].astype(int)
 	dataframe['AgeFillClass'] = dataframe['AgeFillClass'].astype(int)
 	dataframe['FamilySizeClass'] = dataframe['FamilySizeClass'].astype(int)
+	
+	# Create title feature from name
+	dataframe['Title'] = dataframe['Name'].str.extract("(.*\.)", expand=False).str.split(",", expand=False).str.get(1).str.strip()
+	
+	""" 
+	>>> train_data['Title'].value_counts()
+	Mr.                          517
+	Miss.                        182
+	Mrs.                         124
+	Master.                       40  <-- Rare
+	Dr.                            7  <-- Rare
+	Rev.                           6  <-- Rare
+	Mlle.                          2  <-- Could be 'Miss.'
+	Major.                         2  <-- Rare
+	Col.                           2  <-- Rare
+	Jonkheer.                      1  <-- Rare
+	Sir.                           1  <-- Rare
+	Mrs. Martin (Elizabeth L.      1  <-- Should be 'Mrs.'
+	Don.                           1  <-- Rare
+	Capt.                          1  <-- Rare
+	the Countess.                  1  <-- Rare
+	Ms.                            1  <-- Could be 'Mrs.'
+	Mme.                           1  <-- Could be 'Mrs.'
+	Lady.                          1  <-- Could be 'Miss.'
+	"""
+	
+	frequent_titles = ['Mr.','Miss.','Mrs.']
+	rare_titles = ['Master.','Dr.','Rev.','Major.','Col.','Jonkheer.','Sir.','Don.','Capt.','the Countess.']
+	
+	dataframe.loc[dataframe['Title'] == 'Mlle.', 'Title'] = 'Miss.'
+	# dataframe.loc[dataframe['Title'] == 'Mrs. Martin (Elizabeth L.', 'Title'] = 'Mrs.'
+	dataframe.loc[dataframe['Title'] == 'Ms.', 'Title'] = 'Mrs.'
+	dataframe.loc[dataframe['Title'] == 'Mme.', 'Title'] = 'Mrs.'
+	dataframe.loc[dataframe['Title'] == 'Lady.', 'Title'] = 'Miss.'
+	
+	dataframe.loc[dataframe['Title'].isin(rare_titles), 'Title'] = 'Rare'
+	dataframe.loc[!dataframe['Title'].isin(frequent_titles), 'Title'] = 'Rare'
 	
 	# FEATURES : PassengerId,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked,Survived||FareFill,AgeFill,Gender,FamilySize,FareClass,AgeFillClass,FamilySizeClass
 	
