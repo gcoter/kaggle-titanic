@@ -74,3 +74,4 @@ def generate_submission_file(test_data,predictions,file_path):
 		submission.loc[i] = [passengerId,survived] # Add row
 		
 	submission.to_csv(file_path, index=False)
+	print("Saved to", file_path)
