@@ -36,12 +36,10 @@ test_data_np = test_data.values
 
 # === Feature selection ===
 
-
-"""
 # === MODEL ===
-from sklearn.linear_model import LogisticRegression 
+from sklearn.ensemble import RandomForestClassifier
 
-model = LogisticRegression()
+model = RandomForestClassifier(n_estimators=10, max_features=None)
 model = model.fit(train_data_np[0::,2::],train_data_np[0::,1])
 
 # Take the same decision trees and run it on the test data
@@ -49,4 +47,3 @@ predictions = model.predict(test_data_np[0::,1::])
 
 # === Generate submission file ===
 utils.generate_submission_file(test_data, predictions, results_path + 'experiment.csv')
-"""
