@@ -25,6 +25,8 @@ def prepare_dataset(dataframe):
 	dataframe.loc[dataframe['FareFill'].isnull(),'FareFill'] = dataframe['FareFill'].mean()
 	dataframe['AgeFill'] = dataframe['Age']
 	dataframe.loc[dataframe['AgeFill'].isnull(),'AgeFill'] = dataframe['AgeFill'].mean()
+	dataframe['EmbarkedFill'] = dataframe['Embarked']
+	dataframe.loc[dataframe['EmbarkedFill'].isnull(),'EmbarkedFill'] = 'C'
 	
 	# Convert 'male' and 'female' to integers
 	dataframe['Gender'] = dataframe['Sex'].map( {'male': 0, 'female': 1} ).astype(int)
@@ -77,6 +79,9 @@ def prepare_dataset(dataframe):
 	for i in range(len(possible_titles)):
 		dataframe.loc[dataframe['Title'] == possible_titles[i], 'TitleClass'] = i
 	
+	# Convert Embarked to numerical classes
+	dataframe['EmbarkedClass'] = dataframe['EmbarkedFill'].map( {'Q': 0, 'S': 1, 'C': 2} ).astype(int)
+	
 	# Conversions to int
 	dataframe['PassengerId'] = dataframe['PassengerId'].astype(int)
 	dataframe['FareFillClass'] = dataframe['FareFillClass'].astype(int)
@@ -94,9 +99,11 @@ def prepare_dataset(dataframe):
 	dataframe = dataframe.drop(['FamilySize'], axis=1)
 	dataframe = dataframe.drop(['SibSp'], axis=1)
 	dataframe = dataframe.drop(['Parch'], axis=1)
+	dataframe = dataframe.drop(['Embarked'], axis=1)
+	dataframe = dataframe.drop(['EmbarkedFill'], axis=1)
 
 	# Drop unused columns (dtype=object)
-	dataframe = dataframe.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Title'], axis=1)
+	dataframe = dataframe.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Title'], axis=1)
 	
 	# FEATURES : PassengerId,(Survived),Pclass||Gender,FareFillClass,AgeFillClass,FamilySizeClass,TitleClass
 	return dataframe
