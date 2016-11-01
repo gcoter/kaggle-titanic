@@ -1,4 +1,6 @@
 """
+This script contains useful functions. I mainly use it to prepare the datasets (feature engineering, cleaning, conversions, etc...)
+
 ORIGINAL DATASET : PassengerId,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked,Survived
 
 NEW DATASET : PassengerId,Survived,Pclass,FamilySizeClass,FareClass,Gender,AgeFillClass

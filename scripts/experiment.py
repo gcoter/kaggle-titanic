@@ -1,5 +1,5 @@
 """
-Experiment
+Script used to experiment
 """
 
 from __future__ import print_function
@@ -65,7 +65,6 @@ model = model.fit(train_X,train_Y)
 
 print("Score :",model.score(train_X,train_Y))
 
-"""
 # Take the same decision trees and run it on the test data
 test_X = test_data_np[0::,1::]
 test_X_new = test_X[:,selected_indices]
@@ -73,4 +72,3 @@ predictions = model.predict(test_X)
 
 # === Generate submission file ===
 utils.generate_submission_file(test_data, predictions, results_path + 'experiment.csv')
-"""
