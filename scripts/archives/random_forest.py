@@ -30,7 +30,7 @@ test_data_np = test_data.values
 
 # === MODEL ===
 # Import the random forest package
-from sklearn.ensemble import RandomForestClassifier 
+from sklearn.ensemble import RandomForestClassifier
 
 # Create the random forest object which will include all the parameters
 # for the fit
