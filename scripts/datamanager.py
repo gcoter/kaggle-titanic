@@ -61,57 +61,6 @@ class DataManager(object):
 			dataframes[file_name] = pd.read_csv(files_paths[file_name])
 		
 		return dataframes
-	
-	@staticmethod
-	def filter(dataframe):
-		logging.info("Filtering dataframe")
-		
-		""" 
-		YOUR CODE HERE (if necessary)
-		
-		This function must remove unnecessary columns from dataframe and return it.
-		"""
-		return dataframe
-		
-	@staticmethod
-	def clean(dataframe):
-		logging.info("Cleaning dataframe")
-		
-		""" 
-		This function must clear (and complete) data in dataframe and return it.
-		"""
-		
-		dataframe['FareFill'] = dataframe['Fare']
-		dataframe.loc[dataframe['FareFill'].isnull(),'FareFill'] = dataframe['FareFill'].mean()
-		
-		dataframe['AgeFill'] = dataframe['Age']
-		dataframe.loc[dataframe['AgeFill'].isnull(),'AgeFill'] = dataframe['AgeFill'].mean()
-		
-		dataframe['EmbarkedFill'] = dataframe['Embarked']
-		dataframe.loc[dataframe['EmbarkedFill'].isnull(),'EmbarkedFill'] = 'C'
-		
-		return dataframe
-		
-	@staticmethod
-	def feature_engineering(dataframe):
-		logging.info("Doing feature engineering on dataframe")
-		
-		"""
-		This function must add new features.
-		"""
-		
-		dataframe['FamilySize'] = dataframe['SibSp'] + dataframe['Parch']
-		
-		dataframe['Title'] = dataframe['Name'].str.extract("(.*\.)", expand=False).str.split(",", expand=False).str.get(1).str.strip()
-		
-		dataframe.loc[dataframe['Title'] == 'Mlle.', 'Title'] = 'Miss.'
-		dataframe.loc[dataframe['Title'] == 'Ms.', 'Title'] = 'Mrs.'
-		dataframe.loc[dataframe['Title'] == 'Mme.', 'Title'] = 'Mrs.'
-		dataframe.loc[dataframe['Title'] == 'Lady.', 'Title'] = 'Miss.'
-	
-		dataframe.loc[~dataframe['Title'].isin(constants.FREQUENT_TITLES), 'Title'] = 'Rare'
-		
-		return dataframe
 		
 	@staticmethod
 	def convert_to_classes(dataframe,feature):
@@ -119,55 +68,55 @@ class DataManager(object):
 		median = dataframe.quantile(.5)[feature]
 		quantile2 = dataframe.quantile(.75)[feature]
 		
-		dataframe.loc[(dataframe[feature] < quantile1),feature+'Class'] = 0
-		dataframe.loc[(dataframe[feature] >= quantile1) & (dataframe[feature] < median),feature+'Class'] = 1
-		dataframe.loc[(dataframe[feature] >= median) & (dataframe[feature] < quantile2),feature+'Class'] = 2
-		dataframe.loc[(dataframe[feature] >= quantile2),feature+'Class'] = 3
+		dataframe.loc[(dataframe[feature] < quantile1),feature] = 0
+		dataframe.loc[(dataframe[feature] >= quantile1) & (dataframe[feature] < median),feature] = 1
+		dataframe.loc[(dataframe[feature] >= median) & (dataframe[feature] < quantile2),feature] = 2
+		dataframe.loc[(dataframe[feature] >= quantile2),feature] = 3
 		
 		return dataframe
 		
-	@staticmethod
-	def numerize(dataframe):
-		logging.info("Numerizing dataframe")
+	@staticmethod	
+	def transform_dataframe(dataframe):
+		# Clean and complete
+		dataframe.loc[dataframe['Fare'].isnull(),'Fare'] = dataframe['Fare'].mean() # For test data
+		dataframe.loc[dataframe['Age'].isnull(),'Age'] = dataframe['Age'].median()
+		dataframe.loc[dataframe['Embarked'].isnull(),'Embarked'] = 'C' # Assumed from the fare payed (80, close to 59 which is the average price from 'C')
+
+		# Feature Engineering
+		dataframe['FamilySize'] = dataframe['SibSp'] + dataframe['Parch'] + 1
 		
-		"""
-		This function must transform all non-numeric features (string, boolean, etc...) 
-		into numeric features in dataframe and return it.
-		"""
+		dataframe.loc[dataframe['FamilySize'] == 1, 'FamilySize'] = 0
+		dataframe.loc[dataframe['FamilySize'] == 2, 'FamilySize'] = 1
+		dataframe.loc[dataframe['FamilySize'] > 3, 'FamilySize'] = 2
 		
-		dataframe['Gender'] = dataframe['Sex'].map( {'male': 0, 'female': 1} ).astype(int)
+		dataframe['Title'] = dataframe['Name'].str.extract("(.*\.)", expand=False).str.split(",", expand=False).str.get(1).str.strip()
+		dataframe.loc[dataframe['Title'] == 'Mlle.', 'Title'] = 'Miss.'
+		dataframe.loc[dataframe['Title'] == 'Ms.', 'Title'] = 'Mrs.'
+		dataframe.loc[dataframe['Title'] == 'Mme.', 'Title'] = 'Mrs.'
+		dataframe.loc[dataframe['Title'] == 'Lady.', 'Title'] = 'Miss.'
+		dataframe.loc[~dataframe['Title'].isin(constants.FREQUENT_TITLES), 'Title'] = 'Rare'
 		
-		dataframe = DataManager.convert_to_classes(dataframe,'FareFill')
-		dataframe = DataManager.convert_to_classes(dataframe,'AgeFill')
-		dataframe = DataManager.convert_to_classes(dataframe,'FamilySize')
-		
+		dataframe['IsChild'] = dataframe['Age'] < 18
+		dataframe['IsMother'] = (dataframe['Sex'] == 'female') & (~dataframe['IsChild']) & (dataframe['Parch'] > 0) & (dataframe['Title'] != 'Miss.')
+
+		# Numerize
+		dataframe['Sex'] = dataframe['Sex'].map( {'male': 0, 'female': 1} ).astype(int)
+		dataframe = DataManager.convert_to_classes(dataframe,'Fare')
+
 		for i in range(len(constants.POSSIBLE_TITLES)):
-			dataframe.loc[dataframe['Title'] == constants.POSSIBLE_TITLES[i], 'TitleClass'] = i
-			
-		dataframe['EmbarkedClass'] = dataframe['EmbarkedFill'].map( {'Q': 0, 'S': 1, 'C': 2} ).astype(int)
-		
+			dataframe.loc[dataframe['Title'] == constants.POSSIBLE_TITLES[i], 'Title'] = i
+
+		dataframe['Embarked'] = dataframe['Embarked'].map( {'Q': 0, 'S': 1, 'C': 2} ).astype(int)
+
 		# Conversions to int
-		dataframe['PassengerId'] = dataframe['PassengerId'].astype(int)
-		dataframe['FareFillClass'] = dataframe['FareFillClass'].astype(int)
-		dataframe['AgeFillClass'] = dataframe['AgeFillClass'].astype(int)
-		dataframe['FamilySizeClass'] = dataframe['FamilySizeClass'].astype(int)
-		dataframe['TitleClass'] = dataframe['TitleClass'].astype(int)
-		
-		return dataframe
-		
-	@staticmethod
-	def drop_unused(dataframe):
-		""" This function must drop unused features """
-		dataframe = dataframe.drop(['Age'], axis=1)
-		dataframe = dataframe.drop(['Fare'], axis=1)
-		dataframe = dataframe.drop(['FareFill'], axis=1)
-		dataframe = dataframe.drop(['SibSp'], axis=1)
-		dataframe = dataframe.drop(['Parch'], axis=1)
-		dataframe = dataframe.drop(['Embarked'], axis=1)
-		dataframe = dataframe.drop(['EmbarkedFill'], axis=1)
-		
-		# Drop unused columns (dtype=object)
-		dataframe = dataframe.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'Title'], axis=1)
+		dataframe['Age'] = dataframe['Age'].astype(int)
+		dataframe['FamilySize'] = dataframe['FamilySize'].astype(int)
+		dataframe['Title'] = dataframe['Title'].astype(int)
+		dataframe['IsChild'] = dataframe['IsChild'].astype(int)
+		dataframe['IsMother'] = dataframe['IsMother'].astype(int)
+
+		# Drop unused
+		dataframe = dataframe.drop(['Parch','SibSp','Name','Ticket','Cabin','Age'], axis=1)
 		
 		return dataframe
 	
@@ -179,7 +128,7 @@ class DataManager(object):
 		This function must return X (input data) and Y (label for instance) as dataframes
 		"""
 		
-		X = dataframe.drop("Survived", axis=1)
+		X = dataframe.drop(["PassengerId","Survived"], axis=1)
 		Y = dataframe["Survived"]
 		return X, Y
 	
@@ -203,21 +152,6 @@ class DataManager(object):
 			return DataManager.load_datasets()
 		else:
 			return DataManager.construct_datasets(files_paths)
-	
-	@staticmethod	
-	def transform_dataframe(dataframe):
-		logging.debug("Transforming dataframe")
-	
-		"""
-		This method applies all required methods to return a usable dataframe.
-		"""
-		dataframe = DataManager.filter(dataframe)
-		dataframe = DataManager.clean(dataframe)
-		dataframe = DataManager.feature_engineering(dataframe)
-		dataframe = DataManager.numerize(dataframe)
-		dataframe = DataManager.drop_unused(dataframe)
-		
-		return dataframe
 			
 	@staticmethod
 	def shuffle(dataframe):

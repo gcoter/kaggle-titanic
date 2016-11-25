@@ -7,6 +7,8 @@ VALID_X_PATH = SETS_DATA_FOLDER + "valid_X.npy" # Validation set backup file pat
 VALID_Y_PATH = SETS_DATA_FOLDER + "valid_Y.npy"
 TEST_X_PATH = SETS_DATA_FOLDER + "test_X.npy" # Test set backup file path
 
+RESULTS_FOLDER = "../results/"
+
 # Dictionnary: keys are file names and values are paths.
 FILES_PATHS = {
 	"train.csv" : RAW_DATA_FOLDER + "train.csv", # Example

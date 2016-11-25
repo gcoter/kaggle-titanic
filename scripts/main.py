@@ -44,7 +44,11 @@ logging.info("Validation X: " + str(valid_X.shape))
 logging.info("Validation Y: " + str(valid_Y.shape))
 logging.info("Test X: " + str(test_X.shape))
 
-models = [models.SKLearnLogisticRegression(C=1.0,max_iter=1000),models.SKLearnLogisticRegression(C=100.0,max_iter=1000),models.SKRandomForest(n_estimators = 100),models.SKRandomForest(n_estimators = 200)] # Put the models you want to test here
+C_values = [1.0] + [10*i for i in range(1,10)]
+
+models = [models.SKLearnLogisticRegression(C=C_value,max_iter=10000) for C_value in C_values] + [models.SKRandomForest(n_estimators = 100),models.SKRandomForest(n_estimators = 200)] # Put the models you want to test here
 trainer = Trainer(models, train_X, train_Y, valid_X, valid_Y, test_X)
 results = trainer.train()
 trainer.print_results()
+
+trainer.generate_submission_file(constants.RESULTS_FOLDER + "submission.csv")
