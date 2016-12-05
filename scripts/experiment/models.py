@@ -2,6 +2,7 @@ import cPickle
 import logging
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import BernoulliNB
 from abc import abstractmethod
 
 """
@@ -64,3 +65,8 @@ class SKRandomForest(SKModel):
 	def __init__(self,**kwargs):
 		SKModel.__init__(self,"SKRandomForest",**kwargs)
 		self.model_object = RandomForestClassifier(**kwargs)
+		
+class SKNaiveBayes(SKModel):
+	def __init__(self,**kwargs):
+		SKModel.__init__(self,"SKNaiveBayes",**kwargs)
+		self.model_object = BernoulliNB(**kwargs)
