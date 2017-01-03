@@ -40,8 +40,9 @@ SKLearnLogisticRegression           C=90,max_iter=10000                         
 The best model is then selected to generate the submission file (SKLearnLogisticRegression (C=30,max_iter=10000)).
 
 ## Requirements
-Pandas
-scikit-learn
+
+* Pandas
+* scikit-learn
 
 ## References
 Competition : https://www.kaggle.com/c/digit-recognizer
